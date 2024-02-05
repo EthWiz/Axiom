@@ -1,14 +1,18 @@
+use super::db_error::DbError;
 use super::Database;
+use super::DatabaseTrait;
 use crate::types::stock::{Stock, StockHeld};
 
 use rusqlite::{params, Result};
 
 impl Database {
-    pub fn delete_stock_holding(&self, user_id: &str, ticker: &str) -> Result<()> {
-        self.conn.execute(
-            "DELETE FROM stock_held WHERE user_id = ?1 AND ticker = ?2",
-            params![user_id, ticker],
-        )?;
+    pub fn delete_stock_holding(&self, user_id: &str, ticker: &str) -> Result<(), DbError> {
+        self.conn
+            .execute(
+                "DELETE FROM stock_held WHERE user_id = ?1 AND ticker = ?2",
+                params![user_id, ticker],
+            )
+            .map_err(DbError::from);
         Ok(())
     }
     pub fn add_stock_to_user(
@@ -17,7 +21,7 @@ impl Database {
         ticker: &String,
         cost_basis: f64,
         number_of_shares: i32,
-    ) -> Result<()> {
+    ) -> Result<(), DbError> {
         self.conn.execute(
             "INSERT OR REPLACE INTO stock_held (user_id, ticker, cost_basis, number_of_shares) 
              VALUES (?1, ?2, ?3, ?4)",
@@ -25,7 +29,7 @@ impl Database {
         )?;
         Ok(())
     }
-    pub fn get_user_stocks_held(&self, user_id: &str) -> Result<Vec<StockHeld>> {
+    pub fn get_user_stocks_held(&self, user_id: &str) -> Result<Vec<StockHeld>, DbError> {
         let mut stmt = self.conn.prepare(
             "SELECT ticker, cost_basis, number_of_shares FROM stock_held WHERE user_id = ?1",
         )?;
@@ -46,7 +50,7 @@ impl Database {
                 Ok(held) => stocks_held.push(held),
                 Err(e) => {
                     eprintln!("Error retrieving stock holdings: {}", e);
-                    return Ok(Vec::new()); // Return an empty vector if there's an error
+                    return Ok(Vec::new());
                 }
             }
         }

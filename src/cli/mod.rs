@@ -1,5 +1,6 @@
 pub mod cli_new;
 pub mod cli_stock;
+pub mod cli_summary;
 
 use clap::{App, Arg, SubCommand};
 
@@ -9,4 +10,5 @@ pub fn build_cli() -> App<'static> {
         .about("Description of your app")
         .subcommand(cli_new::new_user_subcommand())
         .subcommand(cli_stock::stock_subcommand())
+        .subcommand(cli_summary::summary_subcommand())
 }

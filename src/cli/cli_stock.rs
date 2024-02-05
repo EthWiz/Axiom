@@ -1,4 +1,5 @@
 use crate::db::Database;
+use crate::types::tx::Tx;
 use crate::types::user::User;
 use clap::{App, Arg, SubCommand};
 use prettytable::{cell, format, row, Table};

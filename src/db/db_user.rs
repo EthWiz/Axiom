@@ -1,9 +1,10 @@
+use super::db_error::DbError;
 use super::Database;
 use crate::types::user::User;
 use rusqlite::{params, Result};
 
 impl Database {
-    pub fn add_user(&self, user: &User) -> Result<()> {
+    pub fn add_user(&mut self, user: &User) -> Result<(), DbError> {
         self.conn.execute(
             "INSERT INTO user (user_id, username, balance) VALUES (?1, ?2, ?3)",
             params![user.get_user_id(), user.get_username(), user.get_balance()],
@@ -11,7 +12,7 @@ impl Database {
         Ok(())
     }
 
-    pub fn update_user_bal(&self, user: &User, new_bal: f64) -> Result<(), String> {
+    pub fn update_user_bal(&self, user: &User, new_bal: f64) -> Result<(), DbError> {
         self.conn.execute(
             "INSERT INTO user (user_id, username, balance) VALUES (?1, ?2, ?3)",
             params![user.get_user_id(), user.get_username(), user.get_balance()],
@@ -19,7 +20,7 @@ impl Database {
         Ok(())
     }
 
-    pub fn user_exists(&self, username: &str) -> Result<bool> {
+    pub fn user_exists(&self, username: &str) -> Result<bool, DbError> {
         let mut stmt = self
             .conn
             .prepare("SELECT EXISTS(SELECT 1 FROM user WHERE username = ?1)")?;
@@ -27,7 +28,7 @@ impl Database {
         Ok(exists)
     }
 
-    pub fn get_user_by_username(&self, username: &str) -> Result<User> {
+    pub fn get_user_by_username(&self, username: &str) -> Result<User, DbError> {
         let mut stmt = self
             .conn
             .prepare("SELECT user_id, username, balance FROM user WHERE username = ?1")?;
@@ -40,7 +41,7 @@ impl Database {
                 Ok(holdings) => holdings,
                 Err(e) => {
                     eprintln!("Error getting user stocks: {}", e);
-                    vec![] // Return an empty vector if there's an error
+                    vec![]
                 }
             };
 
